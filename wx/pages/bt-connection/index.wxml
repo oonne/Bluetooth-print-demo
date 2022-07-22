@@ -1,1 +1,37 @@
-<view>选择打印机</view>
+<view class="page">
+  <view class="cells">
+    <view class="cell">
+      <view class="cell-title">
+        当前蓝牙
+      </view>
+      <view class="cell-extra">
+        {{deviceName}}
+      </view>
+    </view>
+  </view>
+
+  <text class="tips">
+    附近的蓝牙设备
+  </text>
+  <view wx:if="{{devices.length}}" class="cells">
+    <view
+      class="cell"
+      wx:for="{{devices}}"
+      wx:key="deviceId"
+      bind:tap="connentDevice"
+      data-id="{{item.deviceId}}"
+    >
+      <view class="cell-device">
+        {{item.name}}
+      </view>
+    </view>
+  </view>
+  <view wx:else class="cells">
+    <view class="cell">
+      <view class="cell-device">
+        暂无设备
+      </view>
+    </view>
+  </view>
+</view>
+

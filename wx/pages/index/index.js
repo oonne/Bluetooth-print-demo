@@ -2,7 +2,7 @@ Page({
   data: {},
   onLoad() {
     wx.navigateTo({
-      url: '/bt-connection/index',
+      url: '/pages/bt-connection/index',
     });
   },
 });
