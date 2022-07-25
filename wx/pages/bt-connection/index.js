@@ -4,7 +4,7 @@ import {
   connentDevice,
   closeDevice,
   initDevices,
-  // setStoragePrinter,
+  setStoragePrinter,
   removeStoragePrinter,
 } from '../../utils/bt';
 
@@ -207,7 +207,34 @@ Page({
       return;
     }
 
+    getApp().globalData.device = device;
+
+    // 初始化设备
     wx.hideLoading();
-    // TODO
+    wx.showLoading({
+      title: '正在初始化',
+      mask: true,
+    });
+    const [err, res] = await to(initDevices());
+
+    if (err) {
+      wx.hideLoading();
+      wx.showToast({
+        icon: 'none',
+        title: err.message,
+      });
+      await closeDevice(deviceId);
+      return;
+    }
+
+    // 储存已初始化的信息，方便下次直接连接
+    setStoragePrinter(res);
+    await closeDevice(deviceId);
+
+    wx.hideLoading();
+    wx.showToast({
+      icon: 'none',
+      title: `已连接${device.name}`,
+    });
   },
 });
