@@ -1,11 +1,19 @@
 import btStatusCode from '../../constant/btStatusCode';
 import { to } from '../../utils/utils';
-import { removeStoragePrinter } from '../../utils/bt';
+import {
+  connentDevice,
+  closeDevice,
+  initDevices,
+  // setStoragePrinter,
+  removeStoragePrinter,
+} from '../../utils/bt';
 
 Page({
   data: {
     // 蓝牙设备
     devices: [],
+    deviceName: '',
+    btStatus: '未初始化蓝牙适配器',
   },
 
   // 打开页面搜索蓝牙
@@ -36,6 +44,9 @@ Page({
 
     // 蓝牙状态正常，直接开始搜索
     if (btStatus === 0) {
+      this.setData({
+        btStatus: btStatusCode[btStatus].zh_CN,
+      });
       return true;
     }
 
@@ -47,6 +58,9 @@ Page({
       const { errCode } = err;
       if (errCode) {
         getApp().globalData.btStatus = errCode;
+        this.setData({
+          btStatus: btStatusCode[errCode].zh_CN,
+        });
 
         wx.showModal({
           title: '启动蓝牙失败',
@@ -59,6 +73,12 @@ Page({
         return false;
       }
     }
+
+    // 蓝牙已打开
+    getApp().globalData.btStatus = 0;
+    this.setData({
+      btStatus: btStatusCode[0].zh_CN,
+    });
 
     return true;
   },
@@ -75,6 +95,7 @@ Page({
     removeStoragePrinter();
     this.setData({
       devices: [],
+      btStatus: '正在搜素蓝牙设备',
     });
 
     // 开始搜索蓝牙设备
@@ -151,5 +172,42 @@ Page({
     this.setData({
       devices,
     });
+  },
+
+  /**
+   * 连接设备
+   */
+  async connentDevice(e) {
+    getApp().globalData.deviceStatus = 'disconnect';
+    const deviceId = e.currentTarget.dataset.id;
+    const device = this.data.devices.find((item) => item.deviceId === deviceId);
+    if (!device) {
+      wx.showToast({
+        icon: 'none',
+        title: '找不到设备',
+      });
+      return;
+    }
+
+    wx.showLoading({
+      title: '正在连接设备',
+      mask: true,
+    });
+    getApp().globalData.deviceStatus = 'connecting';
+
+    // 开始连接设备
+    const [connectErr] = await to(connentDevice(deviceId));
+
+    if (connectErr) {
+      wx.showToast({
+        icon: 'none',
+        title: connectErr.message,
+      });
+      await closeDevice(deviceId);
+      return;
+    }
+
+    wx.hideLoading();
+    // TODO
   },
 });

@@ -4,8 +4,11 @@
       <view class="cell-title">
         当前蓝牙
       </view>
-      <view class="cell-extra">
+      <view wx:if="{{deviceName}}" class="cell-extra">
         {{deviceName}}
+      </view>
+      <view wx:else class="cell-extra">
+        {{btStatus}}
       </view>
     </view>
   </view>
@@ -22,7 +25,7 @@
       data-id="{{item.deviceId}}"
     >
       <view class="cell-device">
-        {{item.name}}
+        {{item.localName}}
       </view>
     </view>
   </view>
