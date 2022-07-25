@@ -236,5 +236,8 @@ Page({
       icon: 'none',
       title: `已连接${device.name}`,
     });
+    this.setData({
+      deviceName: device.name,
+    });
   },
 });
