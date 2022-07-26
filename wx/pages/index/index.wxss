@@ -1,0 +1,40 @@
+
+.cells{
+  margin: 16rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+}
+.cell{
+  position: relative;
+  height: 140rpx;
+  line-height: 140rpx;
+  padding-left: 32rpx;
+  padding-right: 32rpx;
+  display: flex;
+  justify-content: space-between;
+}
+.cell:after{ /*分割线*/
+  content: ' ';
+  display: block;
+  position: absolute;
+  height: 1rpx;
+  width: 100%;
+  bottom: 1rpx;
+  left: 0;
+  right: 0;
+  background-color: #EAEAEA;
+}
+.cell:last-child:after{
+  display: none;
+}
+.cell-title{
+  font-size: 36rpx;
+  font-weight: 400;
+  color: #000;
+}
+.cell-extra{
+  position: relative;
+  font-size: 36rpx;
+  font-weight: 400;
+  color: #888;
+}

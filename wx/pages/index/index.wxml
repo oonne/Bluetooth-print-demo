@@ -1,1 +1,13 @@
-<view>蓝牙选择</view>
+<view class="page">
+  <view class="cells">
+    <view class="cell" bind:tao="toConnection">
+      <view class="cell-title">
+        当前设备
+      </view>
+      <view class="cell-extra">
+        {{deviceName}}
+      </view>
+    </view>
+  </view>
+</view>
+
