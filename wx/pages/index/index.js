@@ -1,6 +1,25 @@
 Page({
   data: {
-    deviceName: '未连接',
+    deviceName: '',
+  },
+
+  onShow() {
+    this.showDeviceName();
+  },
+
+  // 显示当前连接的设备
+  showDeviceName() {
+    this.setData({
+      deviceName: '',
+    });
+    const { device } = getApp().globalData;
+
+    if (!device) {
+      return;
+    }
+    this.setData({
+      deviceName: device.localName,
+    });
   },
 
   toConnection() {

@@ -239,5 +239,6 @@ Page({
     this.setData({
       deviceName: device.name,
     });
+    wx.navigateBack();
   },
 });
