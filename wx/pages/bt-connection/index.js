@@ -3,7 +3,7 @@ import { to } from '../../utils/utils';
 import {
   connentDevice,
   closeDevice,
-  initDevices,
+  initDevice,
   setStoragePrinter,
   removeStoragePrinter,
 } from '../../utils/bt';
@@ -215,7 +215,7 @@ Page({
       title: '正在初始化',
       mask: true,
     });
-    const [err, res] = await to(initDevices());
+    const [err, res] = await to(initDevice());
 
     if (err) {
       wx.hideLoading();
@@ -227,7 +227,7 @@ Page({
       return;
     }
 
-    // 储存已初始化的信息，方便下次直接连接
+    // 储存已初始化的信息，方便下次直接连接，然后断开连接
     setStoragePrinter(res);
     await closeDevice(deviceId);
 

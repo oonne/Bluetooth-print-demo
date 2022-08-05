@@ -75,7 +75,7 @@ async function closeDevice(deviceId) {
 /**
  * 初始化设备
  */
-async function initDevices() {
+async function initDevice() {
   const { deviceStatus, device } = getApp().globalData;
 
   if (!device) {
@@ -163,10 +163,53 @@ async function initDevices() {
   };
 }
 
+/**
+ * 快速初始化设备
+ * ios下每次打印前都需要调用wx.getBLEDeviceServices()和wx.getBLEDeviceCharacteristics()
+ */
+async function quickInitDevice() {
+  const { device, serviceId } = getApp().globalData;
+  if (!device || !serviceId) {
+    getApp().globalData.deviceStatus = 'disconnect';
+    throw new Error('未设置连接设备');
+  }
+  const { deviceId } = device;
+
+  const [servicesErr] = await to(
+    wx.getBLEDeviceServices({
+      deviceId,
+    }),
+  );
+  if (servicesErr) {
+    const { errCode } = servicesErr;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(servicesErr.errMsg);
+  }
+
+  const [characteristicErr] = await to(
+    wx.getBLEDeviceCharacteristics({
+      deviceId,
+      serviceId,
+    }),
+  );
+  if (characteristicErr) {
+    const { errCode } = characteristicErr;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(characteristicErr.errMsg);
+  }
+
+  return device;
+}
+
 export {
   setStoragePrinter,
   removeStoragePrinter,
   connentDevice,
   closeDevice,
-  initDevices,
+  initDevice,
+  quickInitDevice,
 };

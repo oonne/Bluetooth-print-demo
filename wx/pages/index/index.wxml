@@ -13,5 +13,8 @@
   <block wx:if="{{!deviceName}}">
     <button type="primary" bind:tap="toConnection">搜索蓝牙设备</button>
   </block>
+  <block wx:else>
+    <button type="primary" bind:tap="onPrint">打印</button>
+  </block>
 </view>
 
