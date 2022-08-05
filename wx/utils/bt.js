@@ -205,6 +205,50 @@ async function quickInitDevice() {
   return device;
 }
 
+/**
+ * 发送数据
+ * @param {buffer} buffer 数据
+ * 小程序不会对写入数据包大小做限制，但系统与蓝牙设备会限制蓝牙 4.0 单次传输的数据大小，超过最大字节数后会发生写入错误，建议每次写入不超过 20 字节
+ */
+async function sendDataToDevice(options) {
+  const [err, res] = await to(wx.writeBLECharacteristicValue(options));
+  if (err) {
+    const { errCode } = err;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(err.errMsg);
+  }
+
+  return res;
+}
+async function sendData(buffer) {
+  const {
+    device: { deviceId },
+    serviceId,
+    characteristicId,
+  } = getApp().globalData;
+
+  if (buffer.byteLength <= 0) {
+    return;
+  }
+
+  const [err] = await to(
+    sendDataToDevice({
+      deviceId,
+      serviceId,
+      characteristicId,
+      value: buffer.slice(0, buffer.byteLength > 20 ? 20 : buffer.byteLength),
+    }),
+  );
+
+  if (err) {
+    throw err;
+  }
+
+  await sendData(buffer.slice(20, buffer.byteLength));
+}
+
 export {
   setStoragePrinter,
   removeStoragePrinter,
@@ -212,4 +256,5 @@ export {
   closeDevice,
   initDevice,
   quickInitDevice,
+  sendData,
 };
