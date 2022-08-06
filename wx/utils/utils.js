@@ -13,4 +13,17 @@ function to(promise) {
   return [null, promise];
 }
 
-export { to };
+// 字符转ArrayBuffer
+function charToArrayBuffer(str) {
+  const out = new ArrayBuffer(str.length);
+  const uint8 = new Uint8Array(out);
+
+  str.split('');
+  const strs = str.split('');
+  for (let i = 0; i < strs.length; i++) {
+    uint8[i] = strs[i].charCodeAt();
+  }
+  return out;
+}
+
+export { to, charToArrayBuffer };

@@ -1,5 +1,10 @@
-import { to } from '../../utils/utils';
-import { quickInitDevice, connentDevice, closeDevice } from '../../utils/bt';
+import { to, charToArrayBuffer } from '../../utils/utils';
+import {
+  quickInitDevice,
+  connentDevice,
+  closeDevice,
+  sendData,
+} from '../../utils/bt';
 
 Page({
   data: {
@@ -58,8 +63,15 @@ Page({
       return;
     }
 
-    console.log(device);
-    // TODO
+    // 发送数据
+    const data = this.getDemoPrintData();
+    await sendData(data);
+
     await closeDevice(deviceId);
+  },
+
+  // 测试打印数据
+  getDemoPrintData() {
+    return charToArrayBuffer('www.oonne.com\n');
   },
 });
