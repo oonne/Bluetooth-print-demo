@@ -9,6 +9,7 @@ import {
 Page({
   data: {
     deviceName: '',
+    printing: false,
   },
 
   onShow() {
@@ -40,6 +41,14 @@ Page({
   async onPrint() {
     const { device } = getApp().globalData;
     const { deviceId } = device;
+    const { printing } = this.data;
+
+    if (printing) {
+      return;
+    }
+    this.setData({
+      printing: true,
+    });
 
     // 连接
     const [connectErr] = await to(connentDevice(deviceId));
@@ -49,6 +58,9 @@ Page({
         title: connectErr.message,
       });
       await closeDevice(deviceId);
+      this.setData({
+        printing: false,
+      });
       return;
     }
 
@@ -60,6 +72,9 @@ Page({
         title: initErr.message,
       });
       await closeDevice(deviceId);
+      this.setData({
+        printing: false,
+      });
       return;
     }
 
@@ -67,11 +82,16 @@ Page({
     const data = this.getDemoPrintData();
     await sendData(data);
 
+    // 发送结束
     await closeDevice(deviceId);
+    this.setData({
+      printing: false,
+    });
   },
 
   // 测试打印数据
   getDemoPrintData() {
-    return charToArrayBuffer('www.oonne.com\n');
+    const data = `www.oonne.com`;
+    return charToArrayBuffer(data);
   },
 });
