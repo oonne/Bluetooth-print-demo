@@ -1,4 +1,4 @@
-import btStatusCode from '../constant/btStatusCode';
+import btStatusCode from '../constant/bt-status-code';
 import { to } from './utils';
 
 /**
