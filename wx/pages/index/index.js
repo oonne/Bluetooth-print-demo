@@ -1,4 +1,5 @@
-import { to, charToArrayBuffer } from '../../utils/utils';
+import { to } from '../../utils/utils';
+import { gbk2buffer } from '../../utils/encode';
 import {
   quickInitDevice,
   connentDevice,
@@ -91,7 +92,7 @@ Page({
 
   // 测试打印数据
   getDemoPrintData() {
-    const data = `www.oonne.com`;
-    return charToArrayBuffer(data);
+    const data = `www.oonne.com 中文打印\n`;
+    return gbk2buffer(data);
   },
 });
