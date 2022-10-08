@@ -10,6 +10,7 @@ import {
 Page({
   data: {
     deviceName: '',
+    text: '打印blog.oonne.com',
     printing: false,
   },
 
@@ -92,7 +93,7 @@ Page({
 
   // 测试打印数据
   getDemoPrintData() {
-    const data = `www.oonne.com 中文打印\n`;
-    return gbk2buffer(data);
+    const text = `${this.data.text}\n`;
+    return gbk2buffer(text);
   },
 });

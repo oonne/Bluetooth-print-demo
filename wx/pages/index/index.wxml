@@ -8,6 +8,12 @@
         {{deviceName || '未连接'}}
       </view>
     </view>
+    <view class="cell" wx:if="{{deviceName}}">
+      <view class="cell-title">
+        打印内容
+      </view>
+      <input class="cell-extra" model:value="{{text}}" />
+    </view>
   </view>
 
   <block wx:if="{{!deviceName}}">
