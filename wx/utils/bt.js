@@ -73,29 +73,20 @@ async function closeDevice(deviceId) {
 }
 
 /**
- * 初始化设备
+ * 不同的打印机设备，使用不同的标准方式来获取可用的 service 和 characteristic
+ * @params {string} deviceId 设备ID
+ * @return {string} serviceId
+ * @return {string} characteristicId
  */
-async function initDevice() {
-  const { deviceStatus, device } = getApp().globalData;
-
-  if (!device) {
-    getApp().globalData.deviceStatus = 'disconnect';
-    throw new Error('未设置连接设备');
-  }
-  if (deviceStatus !== 'connected') {
-    throw new Error('设备状态不正确');
-  }
-
-  /*
-   * 先以 普贴 51DC 作为适配设备进行测试
-   * serviceId以“ 49535343 ”开头
-   * characteristicId以“ 49535343 ”开头
-   */
-  getApp().globalData.serviceId = '';
-  getApp().globalData.characteristicId = '';
-  const { deviceId } = device;
-
-  // 确定 service
+/*
+ * 普贴打印机，蓝牙名包含“51DC”或“54DC”
+ * serviceId以“ 49535343 ”开头
+ * characteristicId以“ 49535343 ”开头
+ */
+function isPt(localName) {
+  return !!~localName.indexOf('51DC') || !!~localName.indexOf('54DC');
+}
+async function getPt(deviceId) {
   const [servicesErr, servicesRes] = await to(
     wx.getBLEDeviceServices({
       deviceId,
@@ -151,6 +142,66 @@ async function initDevice() {
   }
 
   const characteristicId = characteristic.uuid;
+
+  return {
+    serviceId,
+    characteristicId,
+  };
+}
+
+/*
+ * 芝柯打印机，蓝牙名包含“CC4开头”
+ * serviceId以“ 0000FFF0 ”开头
+ * characteristicId以“ 0000FFF2 ”开头
+ */
+// TODO
+
+/*
+ * 商为打印盒子，蓝牙名包含“SW”
+ * serviceId以“ 000000FF ”开头
+ * characteristicId以“ 0000FF01 ”开头
+ */
+// TODO
+
+/*
+ * 其他通用打印机，取第一个可读、可写、可监听的特征值
+ */
+// TODO
+
+/**
+ * 初始化设备
+ */
+async function initDevice() {
+  const { deviceStatus, device } = getApp().globalData;
+
+  if (!device) {
+    getApp().globalData.deviceStatus = 'disconnect';
+    throw new Error('未设置连接设备');
+  }
+  if (deviceStatus !== 'connected') {
+    throw new Error('设备状态不正确');
+  }
+
+  getApp().globalData.serviceId = '';
+  getApp().globalData.characteristicId = '';
+  const { deviceId, localName } = device;
+  let serviceId = '';
+  let characteristicId = '';
+
+  // 普贴打印机
+  if (isPt(localName)) {
+    ({ serviceId, characteristicId } = await getPt(deviceId));
+  } else {
+    // TODO
+    ({ serviceId, characteristicId } = await getPt(deviceId));
+  }
+
+  // 芝柯打印机
+  // TODO
+  // 商为打印盒子
+  // TODO
+  // 其他打印机
+  // TODO
 
   // 初始化完成
   getApp().globalData.serviceId = serviceId;
