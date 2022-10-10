@@ -150,23 +150,202 @@ async function getPt(deviceId) {
 }
 
 /*
- * 芝柯打印机，蓝牙名包含“CC4开头”
+ * 芝柯打印机，蓝牙名以“CC4”开头
  * serviceId以“ 0000FFF0 ”开头
  * characteristicId以“ 0000FFF2 ”开头
  */
-// TODO
+function isZicox(localName) {
+  return localName.indexOf('CC4') === 0;
+}
+async function getZicox(deviceId) {
+  const [servicesErr, servicesRes] = await to(
+    wx.getBLEDeviceServices({
+      deviceId,
+    }),
+  );
+
+  if (servicesErr) {
+    getApp().globalData.deviceStatus = 'error';
+    const { errCode } = servicesErr;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(servicesErr.errMsg);
+  }
+
+  const service = servicesRes.services.find((item) => {
+    const { uuid } = item;
+    return uuid.indexOf('0000FFF0') === 0;
+  });
+
+  if (!service) {
+    getApp().globalData.deviceStatus = 'error';
+    throw new Error('打印机不支持(未找到可用服务)');
+  }
+
+  const serviceId = service.uuid;
+
+  // 确定 characteristic
+  const [characteristicErr, characteristicRes] = await to(
+    wx.getBLEDeviceCharacteristics({
+      deviceId,
+      serviceId,
+    }),
+  );
+
+  if (characteristicErr) {
+    getApp().globalData.deviceStatus = 'error';
+    const { errCode } = characteristicErr;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(characteristicErr.errMsg);
+  }
+
+  const characteristic = characteristicRes.characteristics.find((char) => {
+    const { uuid, properties } = char;
+    return uuid.indexOf('0000FFF2') === 0 && properties.write;
+  });
+
+  if (!characteristic) {
+    getApp().globalData.deviceStatus = 'error';
+    throw new Error('打印机不支持(未找到可用特征)');
+  }
+
+  const characteristicId = characteristic.uuid;
+
+  return {
+    serviceId,
+    characteristicId,
+  };
+}
 
 /*
- * 商为打印盒子，蓝牙名包含“SW”
+ * 商为打印盒子，蓝牙名以“SW”开头
  * serviceId以“ 000000FF ”开头
  * characteristicId以“ 0000FF01 ”开头
  */
-// TODO
+function isSw(localName) {
+  return localName.indexOf('SW') === 0;
+}
+async function getSw(deviceId) {
+  const [servicesErr, servicesRes] = await to(
+    wx.getBLEDeviceServices({
+      deviceId,
+    }),
+  );
+
+  if (servicesErr) {
+    getApp().globalData.deviceStatus = 'error';
+    const { errCode } = servicesErr;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(servicesErr.errMsg);
+  }
+
+  const service = servicesRes.services.find((item) => {
+    const { uuid } = item;
+    return uuid.indexOf('000000FF') === 0;
+  });
+
+  if (!service) {
+    getApp().globalData.deviceStatus = 'error';
+    throw new Error('打印机不支持(未找到可用服务)');
+  }
+
+  const serviceId = service.uuid;
+
+  // 确定 characteristic
+  const [characteristicErr, characteristicRes] = await to(
+    wx.getBLEDeviceCharacteristics({
+      deviceId,
+      serviceId,
+    }),
+  );
+
+  if (characteristicErr) {
+    getApp().globalData.deviceStatus = 'error';
+    const { errCode } = characteristicErr;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(characteristicErr.errMsg);
+  }
+
+  const characteristic = characteristicRes.characteristics.find((char) => {
+    const { uuid, properties } = char;
+    return uuid.indexOf('0000FF01') === 0 && properties.write;
+  });
+
+  if (!characteristic) {
+    getApp().globalData.deviceStatus = 'error';
+    throw new Error('打印机不支持(未找到可用特征)');
+  }
+
+  const characteristicId = characteristic.uuid;
+
+  return {
+    serviceId,
+    characteristicId,
+  };
+}
 
 /*
- * 其他通用打印机，取第一个可读、可写、可监听的特征值
+ * 其他通用打印机，取第一个 (notify || indicate) && write 的特征值
  */
-// TODO
+async function getUniversal(deviceId) {
+  let serviceId = '';
+  let characteristicId = '';
+
+  const [servicesErr, servicesRes] = await to(
+    wx.getBLEDeviceServices({
+      deviceId,
+    }),
+  );
+
+  if (servicesErr) {
+    getApp().globalData.deviceStatus = 'error';
+    const { errCode } = servicesErr;
+    if (errCode) {
+      throw new Error(btStatusCode[errCode].zh_CN);
+    }
+    throw new Error(servicesErr.errMsg);
+  }
+
+  const promiseArr = servicesRes.services.map(async (service) => {
+    const { uuid } = service;
+
+    const characteristicRes = await wx.getBLEDeviceCharacteristics({
+      deviceId,
+      serviceId: uuid,
+    });
+    const characteristic = characteristicRes.characteristics.find((char) => {
+      const {
+        properties: { notify, indicate, write },
+      } = char;
+      return (notify || indicate) && write;
+    });
+
+    if (!characteristic) {
+      return;
+    }
+
+    serviceId = uuid;
+    characteristicId = characteristic.uuid;
+  });
+  await Promise.all(promiseArr);
+
+  if (!characteristicId) {
+    getApp().globalData.deviceStatus = 'error';
+    throw new Error('打印机不支持(未找到可用特征)');
+  }
+
+  return {
+    serviceId,
+    characteristicId,
+  };
+}
 
 /**
  * 初始化设备
@@ -188,20 +367,19 @@ async function initDevice() {
   let serviceId = '';
   let characteristicId = '';
 
-  // 普贴打印机
   if (isPt(localName)) {
+    // 普贴打印机
     ({ serviceId, characteristicId } = await getPt(deviceId));
+  } else if (isZicox(localName)) {
+    // 芝柯打印机
+    ({ serviceId, characteristicId } = await getZicox(deviceId));
+  } else if (isSw(localName)) {
+    // 商为打印盒子
+    ({ serviceId, characteristicId } = await getSw(deviceId));
   } else {
-    // TODO
-    ({ serviceId, characteristicId } = await getPt(deviceId));
+    // 其他打印机
+    ({ serviceId, characteristicId } = await getUniversal(deviceId));
   }
-
-  // 芝柯打印机
-  // TODO
-  // 商为打印盒子
-  // TODO
-  // 其他打印机
-  // TODO
 
   // 初始化完成
   getApp().globalData.serviceId = serviceId;
