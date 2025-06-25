@@ -10,7 +10,7 @@ function unicode2ArrayBuffer(str) {
   str.split('');
   const strs = str.split('');
   for (let i = 0; i < strs.length; i++) {
-    uint8[i] = strs[i].charCodeAt();
+    uint8[i] = strs[i].charCodeAt(0);
   }
   return out;
 }
