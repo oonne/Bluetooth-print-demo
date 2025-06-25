@@ -1,8 +1,8 @@
 {
-  "projectname": "%E8%93%9D%E7%89%99%E6%89%93%E5%8D%B0",
+  "projectname": "%E8%93%9D%E7%89%99%E6%89%93%E5%8D%B0demo",
   "setting": {
     "compileHotReLoad": true
   },
   "description": "项目私有配置文件。此文件中的内容将覆盖 project.config.json 中的相同字段。项目的改动优先同步到此文件中。详见文档：https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html",
-  "libVersion": "2.25.1"
+  "libVersion": "3.8.10"
 }
