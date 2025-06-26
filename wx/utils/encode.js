@@ -1,4 +1,4 @@
-import { GB18303_TABLE, GB18303_RANGES } from '../constant/bg18030-table';
+import { GB18303_TABLE, GB18303_RANGES } from '../constant/gb18030-table';
 
 /*
  * unicode 转 ArrayBuffer，适用于没有中文的场景
